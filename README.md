@@ -1,23 +1,28 @@
 # SmartBin — Automated Waste Bin
 
-University IoT project (Unit 20). Proximity-activated bin lid controlled by Arduino Uno.
+University IoT project (Unit 20). Proximity-activated smart bin with IoT remote control.
 
-## Hardware (v0.1)
+## Hardware (v0.2)
 | Component | Purpose |
 |---|---|
-| Arduino Uno | Main controller |
-| L293D motor driver | Drive DVD stepper motors |
-| 2× DVD stepper motors | Open/close lid |
-| HC-SR04 | Detect hand (<20 cm) |
+| Arduino Uno | Main controller (FSM logic) |
+| KT0905 linear actuator (30 mm, 5V) | Lid open/close — replaces DVD steppers |
+| TB6612FNG motor driver | Drive linear actuator up to 1.2 A |
+| HC-SR04 #1 (front) | Detect hand <30 cm → open lid |
+| HC-SR04 #2 (inside lid) | Hold open while person present; measure fill level |
 | ESP8266 | Telegram remote control |
 
-## How it works
-1. HC-SR04 detects a hand within 20 cm.
-2. Arduino drives L293D to step both motors forward (open).
-3. After 3 seconds the lid closes automatically.
-4. Telegram bot (via ESP8266) can open/close/lock remotely.
+## Why we switched from DVD motors
+DVD stepper motors did not generate enough torque to lift the metal lid.
+The KT0905 linear actuator provides 6N force and has built-in limit protectors.
+
+## 5-State FSM
+`IDLE → OPENING → OPEN → CLOSING → (FULL if bin >90%)`
 
 ## Wiring
-- L293D pins → Arduino 8, 9, 10, 11
-- HC-SR04 TRIG → pin 12, ECHO → pin 13
-- ESP8266 TX → Arduino RX (pin 0), ESP RX → Arduino TX (pin 1)
+| Signal | Pin |
+|---|---|
+| HC-SR04 #1 TRIG/ECHO | A0 / A1 |
+| HC-SR04 #2 TRIG/ECHO | A2 / A3 |
+| TB6612 AIN1, AIN2, PWMA | 8, 9, 5 |
+| ESP8266 TX→RX / RX→TX | 0 / 1 |
