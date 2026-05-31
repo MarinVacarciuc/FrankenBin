@@ -6,6 +6,5 @@ docs/
 archive/
 
 # Added progressively as project evolved — removed when each was ready to publish
-code/nodemcu_gateway/
 assets/screenshots/
 assets/qr.png
