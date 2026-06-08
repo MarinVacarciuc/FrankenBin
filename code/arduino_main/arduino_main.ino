@@ -123,8 +123,13 @@ void loop() {
     case OPENING: {
       Serial.println(F("LID:OPEN"));
       actuatorExtend(); delay(2500); actuatorStop();
+      if (!isMuted) {
+        myMP3.playMp3Folder(welcomeTrack); welcomeTrack++; if (welcomeTrack > 4) welcomeTrack = 2;
+        // DFPlayer needs ~200 ms to assert BUSY after a play command.
+        // Without this wait, OPEN state sees BUSY=HIGH immediately and starts the close timer.
+        delay(250);
+      }
       currentState = OPEN; timerStarted = false;
-      if (!isMuted) { myMP3.playMp3Folder(welcomeTrack); welcomeTrack++; if (welcomeTrack > 4) welcomeTrack = 2; }
       break;
     }
     case OPEN: {
