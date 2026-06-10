@@ -54,6 +54,8 @@ void parseArduino(String msg) {
     String alarm = msg.substring(6);
     if (alarm == "FULL") { isLocked = true; bot.sendMessage(CHAT_ID, "Bin is full. Please empty it.", ""); }
   }
+  else if (msg == "SYS:BOOT")  { bot.sendMessage(CHAT_ID, "Arduino restarted.", ""); }
+  else if (msg == "SYS:CRASH") { bot.sendMessage(CHAT_ID, "Arduino restarted after a crash (watchdog).", ""); }
 }
 
 void handleNewMessages(int n) {

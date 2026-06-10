@@ -1,14 +1,20 @@
-// SmartBin v1.0 — Dual-controller architecture.
+// SmartBin v1.1 — Dual-controller architecture + watchdog crash recovery.
 // Arduino Uno handles all hardware; NodeMCU ESP8266 handles all networking.
 // Communication: Hardware Serial pins 0/1 (cross-wired, 9600 baud).
 // Arduino sends event strings (LID:OPEN, LID:CLOSED, FILL:%, TEMP:, ALARM:*).
 // NodeMCU sends single-char commands: 'o' open, 'm' mute, '+'/'-' volume, 'r' reset.
+// Watchdog: 4 s timeout. ISR writes crash flag to EEPROM[0] before reset.
 //
 // IMPORTANT: disconnect pins 0/1 before uploading firmware via USB.
 
 #include <SoftwareSerial.h>
 #include <DFRobotDFPlayerMini.h>
 #include <DHT.h>
+#include <EEPROM.h>
+#include <avr/wdt.h>
+
+#define CRASH_FLAG_ADDR 0
+#define CRASH_MAGIC     0xAB
 
 enum State { IDLE, OPENING, OPEN, CLOSING, FULL_LOCKED };
 State currentState = IDLE;
@@ -83,7 +89,12 @@ void processCommand(char cmd) {
   if (cmd == 'r') { void (*reset)(void) = 0; reset(); }
 }
 
+ISR(WDT_vect) {
+  EEPROM.write(CRASH_FLAG_ADDR, CRASH_MAGIC);
+}
+
 void setup() {
+  wdt_disable();
   Serial.begin(9600);
   mp3Serial.begin(9600);
   dht.begin();
@@ -92,13 +103,19 @@ void setup() {
   pinMode(AIN1, OUTPUT); pinMode(AIN2, OUTPUT); pinMode(PWMA, OUTPUT);
   pinMode(BUTTON_PIN, INPUT_PULLUP); pinMode(BUSY_PIN, INPUT);
   delay(1000);
+  if (EEPROM.read(CRASH_FLAG_ADDR) == CRASH_MAGIC) {
+    EEPROM.write(CRASH_FLAG_ADDR, 0x00);
+    Serial.println(F("SYS:CRASH"));
+  }
   if (myMP3.begin(mp3Serial)) { myMP3.volume(currentVolume); delay(500); myMP3.playMp3Folder(1); delay(1500); }
   actuatorRetract(); delay(1900); actuatorStop();
   currentState = IDLE;
   Serial.println(F("SYS:BOOT"));
+  wdt_enable(WDTO_4S);
 }
 
 void loop() {
+  wdt_reset();
   if (Serial.available() > 0) processCommand(Serial.read());
 
   if (checkButton() && (currentState == IDLE || currentState == CLOSING)) {
