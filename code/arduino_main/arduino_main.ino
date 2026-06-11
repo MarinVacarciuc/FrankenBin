@@ -1,9 +1,9 @@
-// SmartBin v1.1 — Dual-controller architecture + watchdog crash recovery.
+// FrankenBin v2.0 — 6-state FSM with fire alarm, active anti-pinch, watchdog.
 // Arduino Uno handles all hardware; NodeMCU ESP8266 handles all networking.
 // Communication: Hardware Serial pins 0/1 (cross-wired, 9600 baud).
-// Arduino sends event strings (LID:OPEN, LID:CLOSED, FILL:%, TEMP:, ALARM:*).
-// NodeMCU sends single-char commands: 'o' open, 'm' mute, '+'/'-' volume, 'r' reset.
-// Watchdog: 4 s timeout. ISR writes crash flag to EEPROM[0] before reset.
+//
+// States: IDLE → OPENING → OPEN → CLOSING → FULL_LOCKED
+//                                          ↘ FIRE_ALARM (emergency open)
 //
 // IMPORTANT: disconnect pins 0/1 before uploading firmware via USB.
 
@@ -16,7 +16,7 @@
 #define CRASH_FLAG_ADDR 0
 #define CRASH_MAGIC     0xAB
 
-enum State { IDLE, OPENING, OPEN, CLOSING, FULL_LOCKED };
+enum State { IDLE, OPENING, OPEN, CLOSING, FULL_LOCKED, FIRE_ALARM };
 State currentState = IDLE;
 
 const int TRIG_1 = A0; const int ECHO_1 = A1;
@@ -30,19 +30,22 @@ DFRobotDFPlayerMini myMP3;
 #define DHTTYPE DHT11
 DHT dht(DHT_PIN, DHTTYPE);
 
-const int OPEN_DIST   = 20;
-const int HOLD_DIST   = 30;
-const int FULL_DIST   = 6;
-const int EMPTY_DIST  = 40;
-const int CLOSE_DELAY = 1000;
+const int OPEN_DIST     = 20;
+const int HOLD_DIST     = 30;
+const int ANTIPINCH_CM  = 4;
+const int FULL_DIST     = 6;
+const int EMPTY_DIST    = 40;
+const int CLOSE_DELAY   = 1000;
+const float FIRE_TEMP   = 35.0;
 
 bool isMuted = false;
-int  currentVolume    = 15;
-int  welcomeTrack     = 2;
-int  angryTrack       = 6;
+int  currentVolume  = 15;
+int  welcomeTrack   = 2;
+int  angryTrack     = 6;
 unsigned long zoneClearTime = 0;
 bool timerStarted = false;
-unsigned long lastSecCheck = 0;
+unsigned long lastSecCheck  = 0;
+unsigned long lastFireAlert = 0;
 
 void actuatorExtend()  { digitalWrite(AIN1, HIGH); digitalWrite(AIN2, LOW);  analogWrite(PWMA, 255); }
 void actuatorRetract() { digitalWrite(AIN1, LOW);  digitalWrite(AIN2, HIGH); analogWrite(PWMA, 255); }
@@ -84,8 +87,8 @@ bool checkIfFull() {
 void processCommand(char cmd) {
   if (cmd == '+') { currentVolume = constrain(currentVolume + 2, 0, 30); if (!isMuted) myMP3.volume(currentVolume); Serial.print(F("VOL:")); Serial.println(map(currentVolume, 0, 30, 0, 100)); }
   if (cmd == '-') { currentVolume = constrain(currentVolume - 2, 0, 30); if (!isMuted) myMP3.volume(currentVolume); Serial.print(F("VOL:")); Serial.println(map(currentVolume, 0, 30, 0, 100)); }
-  if (cmd == 'm') { isMuted = !isMuted; myMP3.volume(isMuted ? 0 : currentVolume); }
-  if (cmd == 'o' && currentState == IDLE) currentState = OPENING;
+  if (cmd == 'm') { isMuted = !isMuted; myMP3.volume(isMuted ? 0 : currentVolume); Serial.print(F("MUTE:")); Serial.println(isMuted ? F("ON") : F("OFF")); }
+  if (cmd == 'o' && (currentState == IDLE || currentState == FULL_LOCKED)) currentState = OPENING;
   if (cmd == 'r') { void (*reset)(void) = 0; reset(); }
 }
 
@@ -108,7 +111,15 @@ void setup() {
     Serial.println(F("SYS:CRASH"));
   }
   if (myMP3.begin(mp3Serial)) { myMP3.volume(currentVolume); delay(500); myMP3.playMp3Folder(1); delay(1500); }
-  actuatorRetract(); delay(1900); actuatorStop();
+  // Active anti-pinch: close slowly and abort if sensor detects an object
+  actuatorRetract();
+  unsigned long t0 = millis();
+  while (millis() - t0 < 1900) {
+    long d2 = getDistance(TRIG_2, ECHO_2);
+    if (d2 > 0 && d2 < ANTIPINCH_CM) { actuatorStop(); delay(200); actuatorExtend(); delay(500); actuatorStop(); break; }
+    delay(50);
+  }
+  actuatorStop();
   currentState = IDLE;
   Serial.println(F("SYS:BOOT"));
   wdt_enable(WDTO_4S);
@@ -118,16 +129,25 @@ void loop() {
   wdt_reset();
   if (Serial.available() > 0) processCommand(Serial.read());
 
-  if (checkButton() && (currentState == IDLE || currentState == CLOSING)) {
+  if (checkButton() && (currentState == IDLE || currentState == CLOSING || currentState == FULL_LOCKED)) {
     myMP3.stop();
     currentState = OPENING;
   }
 
   if (millis() - lastSecCheck >= 5000) {
+    wdt_reset();
     float t = dht.readTemperature();
     float h = dht.readHumidity();
-    if (!isnan(t)) { Serial.print(F("TEMP:")); Serial.println(t); }
-    if (!isnan(h)) { Serial.print(F("HUM:"));  Serial.println(h); }
+    if (!isnan(t)) {
+      Serial.print(F("TEMP:")); Serial.println(t);
+      if (t >= FIRE_TEMP && currentState != FIRE_ALARM) {
+        currentState = FIRE_ALARM;
+        Serial.println(F("ALARM:FIRE"));
+        actuatorExtend(); delay(2500); actuatorStop();
+        Serial.println(F("LID:OPEN"));
+      }
+    }
+    if (!isnan(h)) { Serial.print(F("HUM:")); Serial.println(h); }
     lastSecCheck = millis();
   }
 
@@ -142,8 +162,6 @@ void loop() {
       actuatorExtend(); delay(2500); actuatorStop();
       if (!isMuted) {
         myMP3.playMp3Folder(welcomeTrack); welcomeTrack++; if (welcomeTrack > 4) welcomeTrack = 2;
-        // DFPlayer needs ~200 ms to assert BUSY after a play command.
-        // Without this wait, OPEN state sees BUSY=HIGH immediately and starts the close timer.
         delay(250);
       }
       currentState = OPEN; timerStarted = false;
@@ -159,10 +177,26 @@ void loop() {
       delay(150); break;
     }
     case CLOSING: {
-      actuatorRetract(); delay(1900); actuatorStop();
-      Serial.println(F("LID:CLOSED"));
-      currentState = checkIfFull() ? FULL_LOCKED : IDLE;
-      if (currentState == FULL_LOCKED) { Serial.println(F("ALARM:FULL")); }
+      bool pinched = false;
+      actuatorRetract();
+      unsigned long closeStart = millis();
+      while (millis() - closeStart < 1900) {
+        wdt_reset();
+        long d2 = getDistance(TRIG_2, ECHO_2);
+        if (d2 > 0 && d2 < ANTIPINCH_CM) {
+          actuatorStop(); delay(100); actuatorExtend(); delay(400); actuatorStop();
+          Serial.println(F("LID:OPEN"));
+          currentState = OPEN; timerStarted = false; pinched = true;
+          break;
+        }
+        delay(50);
+      }
+      if (!pinched) {
+        actuatorStop();
+        Serial.println(F("LID:CLOSED"));
+        currentState = checkIfFull() ? FULL_LOCKED : IDLE;
+        if (currentState == FULL_LOCKED) Serial.println(F("ALARM:FULL"));
+      }
       break;
     }
     case FULL_LOCKED: {
@@ -172,6 +206,14 @@ void loop() {
         delay(500);
       }
       delay(150); break;
+    }
+    case FIRE_ALARM: {
+      // Lid held open. Repeat alert every 10 s.
+      if (millis() - lastFireAlert > 10000) {
+        Serial.println(F("ALARM:FIRE"));
+        lastFireAlert = millis();
+      }
+      delay(500); break;
     }
   }
 }

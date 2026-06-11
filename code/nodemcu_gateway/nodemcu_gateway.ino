@@ -1,12 +1,15 @@
-// SmartBin — NodeMCU ESP8266 gateway (v1.0)
-// Handles all networking: Telegram bot, WiFi.
-// Talks to Arduino Uno via SoftwareSerial D6(GPIO12)/D7(GPIO13) at 9600 baud.
-// Receives: FILL:%, TEMP:, HUM:, LID:*, ALARM:*, VOL:%, MUTE:*
+// FrankenBin — NodeMCU ESP8266 gateway (v2.0)
+// WiFi + Telegram bot + ThingSpeak telemetry + OTA firmware updates.
+// M2M: SoftwareSerial D6(GPIO12)/D7(GPIO13) ↔ Arduino HW Serial pins 0/1.
+// Receives: FILL:%, TEMP:, HUM:, LID:*, ALARM:*, VOL:%, MUTE:*, SYS:*
 // Sends:    'o' open, 'm' mute, '+'/'-' volume, 'r' reset
 
 #include <ESP8266WiFi.h>
 #include <WiFiClientSecure.h>
+#include <ESP8266HTTPClient.h>
+#include <WiFiClient.h>
 #include <UniversalTelegramBot.h>
+#include <ArduinoOTA.h>
 #include <SoftwareSerial.h>
 #include "secrets.h"
 
@@ -22,18 +25,33 @@ float  temperature = 0.0;
 float  humidity    = 0.0;
 String lidState    = "unknown";
 
-unsigned long lastBotCheck = 0;
+unsigned long lastBotCheck    = 0;
+unsigned long lastThingSpeak  = 0;
 const unsigned long BOT_MTBS = 1000;
+const unsigned long TS_MTBS  = 60000;
 
 String serialBuffer = "";
+
+void postToThingSpeak() {
+  WiFiClient client;
+  HTTPClient http;
+  String url = "http://api.thingspeak.com/update?api_key=" + String(TS_API_KEY) +
+               "&field1=" + String(fillPercent) +
+               "&field2=" + String(temperature, 1) +
+               "&field3=" + String(humidity, 1) +
+               "&field4=" + String(WiFi.RSSI());
+  http.begin(client, url);
+  http.GET();
+  http.end();
+}
 
 String getKeyboard() {
   return "[[\"Open\",\"Status\"],[\"Vol+\",\"Vol-\"],[\"" +
          String(isMuted ? "Unmute" : "Mute") +
-         "\",\"" + String(isLocked ? "Unlock" : "Lock") + "\"]]";
+         "\",\"" + String(isLocked ? "Unlock" : "Lock") + "\"],[\"Details\"]]";
 }
 
-void refreshKeyboardForAll(String text) {
+void broadcastKeyboard(String text) {
   bot.sendMessageWithReplyKeyboard(CHAT_ID, text, "", getKeyboard(), true);
 }
 
@@ -43,16 +61,15 @@ void parseArduino(String msg) {
   else if (msg.startsWith("TEMP:"))  { temperature = msg.substring(5).toFloat(); }
   else if (msg.startsWith("HUM:"))   { humidity    = msg.substring(4).toFloat(); }
   else if (msg.startsWith("LID:"))   { lidState    = msg.substring(4); }
-  else if (msg.startsWith("VOL:"))   {
-    refreshKeyboardForAll("Volume set to " + msg.substring(4) + "%");
-  }
+  else if (msg.startsWith("VOL:"))   { broadcastKeyboard("Volume set to " + msg.substring(4) + "%"); }
   else if (msg.startsWith("MUTE:"))  {
     isMuted = msg.substring(5) == "ON";
-    refreshKeyboardForAll(isMuted ? "Muted." : "Unmuted.");
+    broadcastKeyboard(isMuted ? "Muted." : "Unmuted.");
   }
   else if (msg.startsWith("ALARM:")) {
     String alarm = msg.substring(6);
     if (alarm == "FULL") { isLocked = true; bot.sendMessage(CHAT_ID, "Bin is full. Please empty it.", ""); }
+    if (alarm == "FIRE") { bot.sendMessage(CHAT_ID, "FIRE ALARM: high temperature detected. Lid forced open.", ""); }
   }
   else if (msg == "SYS:BOOT")  { bot.sendMessage(CHAT_ID, "Arduino restarted.", ""); }
   else if (msg == "SYS:CRASH") { bot.sendMessage(CHAT_ID, "Arduino restarted after a crash (watchdog).", ""); }
@@ -64,7 +81,7 @@ void handleNewMessages(int n) {
     String text    = bot.messages[i].text;
 
     if (text == "/start") {
-      refreshKeyboardForAll("SmartBin online. Use the buttons below.");
+      broadcastKeyboard("FrankenBin online. Use the buttons below.");
     }
     else if (text == "Open") {
       if (isLocked) { bot.sendMessage(chat_id, "Bin is locked or full.", ""); }
@@ -72,28 +89,25 @@ void handleNewMessages(int n) {
     }
     else if (text == "Status") {
       String s = "";
-      s += "Lid: "         + lidState             + "\n";
-      s += "Fill: "        + String(fillPercent)  + "%\n";
+      s += "Lid: "         + lidState               + "\n";
+      s += "Fill: "        + String(fillPercent)    + "%\n";
       s += "Temperature: " + String(temperature, 1) + " C\n";
-      s += "Humidity: "    + String(humidity, 1)  + "%\n";
-      s += "WiFi: "        + String(WiFi.RSSI())  + " dBm\n";
+      s += "Humidity: "    + String(humidity, 1)    + "%\n";
+      s += "WiFi: "        + String(WiFi.RSSI())    + " dBm\n";
       s += "Muted: "       + String(isMuted ? "yes" : "no") + "\n";
       s += "Lock: "        + String(isLocked ? "LOCKED" : "ACTIVE");
       bot.sendMessage(chat_id, s, "");
     }
+    else if (text == "Details") {
+      String kb = "[[{\"text\":\"About Creator\",\"url\":\"https://www.linkedin.com/in/marin-vacarciuc\"}],"
+                  "[{\"text\":\"ThingSpeak Charts\",\"url\":\"https://thingspeak.com/channels/3405117\"}]]";
+      bot.sendMessageWithInlineKeyboard(chat_id, "FrankenBin — IoT Smart Bin\nUnit 20 project, Global Banking School.", "", kb);
+    }
     else if (text == "Vol+")   { ardSerial.print('+'); }
     else if (text == "Vol-")   { ardSerial.print('-'); }
-    else if (text == "Mute" || text == "Unmute") {
-      ardSerial.print('m');
-    }
-    else if (text == "Lock") {
-      isLocked = true;
-      bot.sendMessage(chat_id, "Bin locked.", "");
-    }
-    else if (text == "Unlock") {
-      isLocked = false;
-      bot.sendMessage(chat_id, "Bin unlocked.", "");
-    }
+    else if (text == "Mute" || text == "Unmute") { ardSerial.print('m'); }
+    else if (text == "Lock")   { isLocked = true;  bot.sendMessage(chat_id, "Bin locked.", ""); }
+    else if (text == "Unlock") { isLocked = false; bot.sendMessage(chat_id, "Bin unlocked.", ""); }
   }
 }
 
@@ -103,10 +117,17 @@ void setup() {
   secured_client.setInsecure();
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   while (WiFi.status() != WL_CONNECTED) delay(500);
-  bot.sendMessage(CHAT_ID, "SmartBin gateway online.", "");
+
+  ArduinoOTA.setHostname("FrankenBin_Gateway");
+  ArduinoOTA.setPassword(OTA_PASSWORD);
+  ArduinoOTA.begin();
+
+  bot.sendMessage(CHAT_ID, "FrankenBin gateway online.", "");
 }
 
 void loop() {
+  ArduinoOTA.handle();
+
   while (ardSerial.available() > 0) {
     char c = ardSerial.read();
     if (c == '\n') { parseArduino(serialBuffer); serialBuffer = ""; }
@@ -117,5 +138,10 @@ void loop() {
     int n = bot.getUpdates(bot.last_message_received + 1);
     while (n) { handleNewMessages(n); n = bot.getUpdates(bot.last_message_received + 1); }
     lastBotCheck = millis();
+  }
+
+  if (millis() - lastThingSpeak > TS_MTBS) {
+    postToThingSpeak();
+    lastThingSpeak = millis();
   }
 }

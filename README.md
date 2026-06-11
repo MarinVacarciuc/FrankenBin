@@ -1,69 +1,87 @@
 # FrankenBin — Smart IoT Bin
 
-University IoT project (Unit 20). Proximity-activated smart waste bin with Telegram remote control.
+University IoT project (Unit 20). Proximity-activated smart waste bin with Telegram control, real-time telemetry, and fire-alarm detection.
 
 ## Architecture
 
 ```
-[Arduino Uno] ←——— HW Serial pins 0/1 ———→ [NodeMCU ESP8266] ←→ Telegram
-      │              (9600 baud, cross-wired)
-  All hardware:
-  sensors, actuator, audio (DFPlayer), climate (DHT11)
+[Arduino Uno] ←——— HW Serial 0/1 (9600 baud) ———→ [NodeMCU ESP8266]
+      │                  cross-wired                       │
+  All hardware                                       Telegram bot
+  (FSM, sensors,                                    ThingSpeak telemetry
+   actuator, audio,                                 OTA firmware updates
+   DHT11, watchdog)
 ```
 
-**Cross-wire rule:**  
+**Cross-wire:**  
 Arduino TX (pin 1) → NodeMCU D6 (GPIO12, SoftSerial RX)  
 Arduino RX (pin 0) ← NodeMCU D7 (GPIO13, SoftSerial TX)
-
-> **Upload warning:** always disconnect pins 0/1 before flashing Arduino via USB.
 
 ## Hardware
 | Component | Purpose |
 |---|---|
-| Arduino Uno | FSM controller |
-| NodeMCU ESP8266 | WiFi + Telegram gateway |
+| Arduino Uno | FSM + all hardware |
+| NodeMCU ESP8266 | WiFi, Telegram, ThingSpeak, OTA |
 | KT0905 linear actuator (30 mm, 5V) | Lid open/close |
-| TB6612FNG motor driver | Motor driver up to 1.2 A |
+| TB6612FNG motor driver | Up to 1.2 A |
 | HC-SR04 #1 (front) | Hand detection (<20 cm) |
-| HC-SR04 #2 (inside lid) | Fill level + hold-open zone |
-| DFPlayer Mini | MP3 audio (welcome + alert tracks) |
+| HC-SR04 #2 (inside lid) | Fill level + hold-open + anti-pinch |
+| DFPlayer Mini | MP3 audio feedback |
 | DHT11 | Temperature + humidity |
-| Tactile button | Manual open override |
+| Tactile button | Manual open |
 
-## 5-State FSM (Arduino)
+## 6-State FSM (Arduino)
 | State | Description |
 |---|---|
-| IDLE | Polling front sensor for hand |
-| OPENING | Extending actuator (2.5 s), plays welcome track |
-| OPEN | Waits for zone to clear; **BUSY pin** prevents close while audio plays |
-| CLOSING | Retracting actuator (1.9 s) |
-| FULL_LOCKED | Plays alert audio; rejects opens until unlocked via Telegram |
+| IDLE | Polling front sensor |
+| OPENING | Extend actuator (2.5 s) + play welcome track |
+| OPEN | Zone-clear timer + BUSY pin guard |
+| CLOSING | **Anti-pinch** polling; reverses if object < 4 cm |
+| FULL_LOCKED | Plays alert audio on approach |
+| **FIRE_ALARM** | Forced open; repeats ALARM:FIRE every 10 s |
 
-**BUSY pin discovery:** DFPlayer takes ~250 ms to pull BUSY LOW after a play command. Without a post-trigger delay, the close timer started before BUSY asserted, causing the lid to close mid-track. Fix: 250 ms delay added between `playMp3Folder()` and entering the OPEN polling loop.
+**Anti-pinch** runs both in CLOSING (live polling) and during boot (setup).  
+**Watchdog** resets Arduino after 4 s hang; EEPROM flag → Telegram crash alert.  
+**Fire threshold:** 35 °C (demo value for sensor test).
 
 ## Serial Protocol (Arduino → ESP)
 | Message | Meaning |
 |---|---|
-| `LID:OPEN` | Lid has opened |
-| `LID:CLOSED` | Lid has closed |
-| `FILL:%` | Fill percentage (0–100) |
+| `LID:OPEN` / `LID:CLOSED` | Lid state change |
+| `FILL:%` | Fill level (0–100) |
 | `TEMP:XX.X` | Temperature °C |
 | `HUM:XX.X` | Humidity % |
-| `ALARM:FULL` | Bin full — triggers Telegram alert + lock |
-| `VOL:%` | New volume (0–100%) |
-| `MUTE:ON/OFF` | Mute state changed |
+| `ALARM:FULL` | Bin full |
+| `ALARM:FIRE` | Fire detected |
+| `VOL:%` | Volume changed |
+| `MUTE:ON/OFF` | Mute state |
+| `SYS:BOOT` | Normal startup |
+| `SYS:CRASH` | Watchdog recovery |
 
 ## Commands (ESP → Arduino)
 `o` open · `m` mute · `+` vol up · `-` vol down · `r` reset
 
+## ThingSpeak
+Channel **3405117** — fields: Fill %, Temperature, Humidity, RSSI. Posted every 60 s.
+
+## Telegram Keyboard
+```
+[ Open   ]  [ Status  ]
+[ Vol+   ]  [ Vol-    ]
+[ Mute   ]  [ Lock    ]
+[ Details ]
+```
+
+Details opens an inline keyboard with creator and chart links.
+
 ## Wiring
-| Signal | Arduino Pin |
+| Signal | Pin |
 |---|---|
 | HC-SR04 #1 TRIG/ECHO | A0 / A1 |
 | HC-SR04 #2 TRIG/ECHO | A2 / A3 |
-| TB6612 AIN1, AIN2, PWMA | 8, 9, 5 |
-| DFPlayer RX/TX (SoftwareSerial) | D10 / D11 |
+| TB6612 AIN1/AIN2/PWMA | 8, 9, 5 |
+| DFPlayer RX/TX | D10 / D11 |
 | DFPlayer BUSY | D4 |
-| DHT11 DATA | D7 |
+| DHT11 | D7 |
 | Tactile button | D12 |
-| M2M TX/RX (Hardware Serial) | 0 / 1 |
+| M2M Serial TX/RX | 0 / 1 |
