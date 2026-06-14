@@ -1,4 +1,4 @@
-// FrankenBin — NodeMCU ESP8266 gateway (v2.0)
+// FrankenBin — NodeMCU ESP8266 gateway (v3.4)
 // WiFi + Telegram bot + ThingSpeak telemetry + OTA firmware updates.
 // M2M: SoftwareSerial D6(GPIO12)/D7(GPIO13) ↔ Arduino HW Serial pins 0/1.
 // Receives: FILL:%, TEMP:, HUM:, LID:*, ALARM:*, VOL:%, MUTE:*, SYS:*
@@ -100,12 +100,17 @@ void handleNewMessages(int n) {
     }
     else if (text == "Details") {
       String kb = "[[{\"text\":\"About Creator\",\"url\":\"https://www.linkedin.com/in/marin-vacarciuc\"}],"
-                  "[{\"text\":\"ThingSpeak Charts\",\"url\":\"https://thingspeak.com/channels/3405117\"}]]";
+                  "[{\"text\":\"ThingSpeak Charts\",\"url\":\"https://thingspeak.com/channels/3405117\"}],"
+                  "[{\"text\":\"Source Code\",\"url\":\"https://github.com/MarinVacarciuc/FrankenBin\"}]]";
       bot.sendMessageWithInlineKeyboard(chat_id, "FrankenBin — IoT Smart Bin\nUnit 20 project, Global Banking School.", "", kb);
     }
     else if (text == "Vol+")   { ardSerial.print('+'); }
     else if (text == "Vol-")   { ardSerial.print('-'); }
-    else if (text == "Mute" || text == "Unmute") { ardSerial.print('m'); }
+    else if (text == "Mute" || text == "Unmute") {
+      // Do NOT pre-apply isMuted here — wait for Arduino's MUTE: confirmation.
+      // Pre-applying caused desync if the command was lost or Arduino rejected it.
+      ardSerial.print('m');
+    }
     else if (text == "Lock")   { isLocked = true;  bot.sendMessage(chat_id, "Bin locked.", ""); }
     else if (text == "Unlock") { isLocked = false; bot.sendMessage(chat_id, "Bin unlocked.", ""); }
   }
