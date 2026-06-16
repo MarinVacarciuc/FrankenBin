@@ -2,6 +2,8 @@
 
 University IoT project (Unit 20). Proximity-activated smart waste bin with Telegram control, ThingSpeak telemetry, and fire-alarm detection.
 
+> **Setup:** copy `code/nodemcu_gateway/secrets.h.example` to `secrets.h` and fill in your WiFi, Telegram, OTA, and ThingSpeak credentials before flashing the NodeMCU.
+
 ## Architecture
 
 ```
