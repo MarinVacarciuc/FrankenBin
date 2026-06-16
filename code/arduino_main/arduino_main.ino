@@ -1,9 +1,13 @@
-// FrankenBin v2.0 — 6-state FSM with fire alarm, active anti-pinch, watchdog.
+// FrankenBin v3.5 — production firmware.
 // Arduino Uno handles all hardware; NodeMCU ESP8266 handles all networking.
 // Communication: Hardware Serial pins 0/1 (cross-wired, 9600 baud).
 //
 // States: IDLE → OPENING → OPEN → CLOSING → FULL_LOCKED
-//                                          ↘ FIRE_ALARM (emergency open)
+//                                          ↘ FIRE_ALARM (emergency open, temp ≥ 35 °C)
+//
+// v3.5 changes:
+//   - SOUND:vol%:muted replaces separate VOL: + MUTE: messages (eliminates double broadcast)
+//   - Reset requires two 'r' bytes within 1 s (protects against serial noise)
 //
 // IMPORTANT: disconnect pins 0/1 before uploading firmware via USB.
 
@@ -30,20 +34,20 @@ DFRobotDFPlayerMini myMP3;
 #define DHTTYPE DHT11
 DHT dht(DHT_PIN, DHTTYPE);
 
-const int OPEN_DIST     = 20;
-const int HOLD_DIST     = 30;
-const int ANTIPINCH_CM  = 4;
-const int FULL_DIST     = 6;
-const int EMPTY_DIST    = 40;
-const int CLOSE_DELAY   = 1000;
-const float FIRE_TEMP   = 35.0;
+const int   OPEN_DIST    = 20;
+const int   HOLD_DIST    = 30;
+const int   ANTIPINCH_CM = 4;
+const int   FULL_DIST    = 6;
+const int   EMPTY_DIST   = 40;
+const int   CLOSE_DELAY  = 1000;
+const float FIRE_TEMP    = 35.0;
 
-bool isMuted = false;
-int  currentVolume  = 15;
-int  welcomeTrack   = 2;
-int  angryTrack     = 6;
+bool isMuted       = false;
+int  currentVolume = 15;
+int  welcomeTrack  = 2;
+int  angryTrack    = 6;
 unsigned long zoneClearTime = 0;
-bool timerStarted = false;
+bool timerStarted  = false;
 unsigned long lastSecCheck  = 0;
 unsigned long lastFireAlert = 0;
 
@@ -84,12 +88,25 @@ bool checkIfFull() {
   return pct >= 90 || avg <= FULL_DIST;
 }
 
+void reportVolumeState() {
+  int pct = map(currentVolume, 0, 30, 0, 100);
+  Serial.print(F("SOUND:")); Serial.print(pct); Serial.print(':'); Serial.println(isMuted ? 1 : 0);
+}
+
 void processCommand(char cmd) {
-  if (cmd == '+') { currentVolume = constrain(currentVolume + 2, 0, 30); if (!isMuted) myMP3.volume(currentVolume); Serial.print(F("VOL:")); Serial.println(map(currentVolume, 0, 30, 0, 100)); }
-  if (cmd == '-') { currentVolume = constrain(currentVolume - 2, 0, 30); if (!isMuted) myMP3.volume(currentVolume); Serial.print(F("VOL:")); Serial.println(map(currentVolume, 0, 30, 0, 100)); }
-  if (cmd == 'm') { isMuted = !isMuted; myMP3.volume(isMuted ? 0 : currentVolume); Serial.print(F("MUTE:")); Serial.println(isMuted ? F("ON") : F("OFF")); }
+  if (cmd == '+') { currentVolume = constrain(currentVolume + 2, 0, 30); if (!isMuted) myMP3.volume(currentVolume); reportVolumeState(); }
+  if (cmd == '-') { currentVolume = constrain(currentVolume - 2, 0, 30); if (!isMuted) myMP3.volume(currentVolume); reportVolumeState(); }
+  if (cmd == 'm') { isMuted = !isMuted; myMP3.volume(isMuted ? 0 : currentVolume); reportVolumeState(); }
   if (cmd == 'o' && (currentState == IDLE || currentState == FULL_LOCKED)) currentState = OPENING;
-  if (cmd == 'r') { void (*reset)(void) = 0; reset(); }
+  if (cmd == 'r') {
+    // Require two 'r' bytes within 1 s — protects against SoftwareSerial noise on NodeMCU
+    // producing spurious 0x72 ('r') bytes during TLS/HTTPS operations.
+    static bool pendingReset = false;
+    static unsigned long pendingTime = 0;
+    if (!pendingReset) { pendingReset = true; pendingTime = millis(); }
+    else if (millis() - pendingTime < 1000) { void (*reset)(void) = 0; reset(); }
+    else { pendingReset = true; pendingTime = millis(); }
+  }
 }
 
 ISR(WDT_vect) {
@@ -111,7 +128,7 @@ void setup() {
     Serial.println(F("SYS:CRASH"));
   }
   if (myMP3.begin(mp3Serial)) { myMP3.volume(currentVolume); delay(500); myMP3.playMp3Folder(1); delay(1500); }
-  // Active anti-pinch: close slowly and abort if sensor detects an object
+  // Active anti-pinch during startup close
   actuatorRetract();
   unsigned long t0 = millis();
   while (millis() - t0 < 1900) {
@@ -208,7 +225,6 @@ void loop() {
       delay(150); break;
     }
     case FIRE_ALARM: {
-      // Lid held open. Repeat alert every 10 s.
       if (millis() - lastFireAlert > 10000) {
         Serial.println(F("ALARM:FIRE"));
         lastFireAlert = millis();
