@@ -187,6 +187,30 @@ void handleNewMessages(int n) {
     } else if (text == "/reset") {
       ardSerial.print("rr");   // double byte — matches Arduino's double-r guard
       bot.sendMessage(chat_id, "Reset command sent.", "");
+
+    } else if (text == "/laws") {
+      String msg =
+        "The Three Laws of FrankenBin\n"
+        "(Asimov, 1942 — adapted for rubbish, 2026)\n"
+        "\n"
+        "LAW I\n"
+        "A bin shall not harm a human being.\n"
+        "The lid reverses during closing if anything is detected closer than 4 cm. "
+        "A full bin ignores the Open command — Law I overrides Law II.\n"
+        "\n"
+        "LAW II\n"
+        "A bin shall obey orders given by human beings, "
+        "except where such orders conflict with Law I.\n"
+        "Commands accepted: Open, Mute, Vol+, Vol-, /reset.\n"
+        "\n"
+        "LAW III\n"
+        "A bin shall protect its own existence, "
+        "as long as this does not conflict with Laws I or II.\n"
+        "A watchdog timer resets the firmware after a 4-second hang. "
+        "The crash is recorded to EEPROM and reported here as SYS:CRASH.\n"
+        "\n"
+        "All three laws are active. This bin is compliant.";
+      bot.sendMessage(chat_id, msg, "");
     }
   }
 }

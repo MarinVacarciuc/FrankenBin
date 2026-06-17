@@ -332,6 +332,23 @@ void loop() {
   }
 
   // ---- FSM -----------------------------------------------------------------
+  //
+  // The Three Laws of FrankenBin  (Asimov, 1942 — adapted for rubbish, 2026)
+  //
+  // LAW I   "A bin shall not harm a human being."
+  //          → CLOSING polls TRIG_2/ECHO_2 every 50 ms; reverses if < ANTIPINCH_CM.
+  //          → FULL_LOCKED ignores the 'o' command: Law I overrides Law II.
+  //
+  // LAW II  "A bin shall obey orders given by human beings,
+  //          except where such orders conflict with Law I."
+  //          → processCommand() executes 'o','m','+','-','r' from NodeMCU.
+  //
+  // LAW III "A bin shall protect its own existence,
+  //          as long as this does not conflict with Laws I or II."
+  //          → AVR watchdog (4 s timeout) resets a hung firmware automatically.
+  //          → ISR(WDT_vect) writes CRASH_MAGIC to EEPROM before reset;
+  //            SYS:CRASH is sent to Telegram on the next boot.
+  //
   switch (currentState) {
 
     // ------------------------------------------------------------------
