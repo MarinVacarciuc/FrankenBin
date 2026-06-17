@@ -146,15 +146,14 @@ void handleNewMessages(int n) {
       }
 
     } else if (text == "Status") {
-      String s;
-      s += "Lid: "      + lidState                                        + "\n";
-      s += "Fill: "     + String(fillPercent)                             + "%\n";
-      s += "Temp: "     + String(temperature, 1)                          + " C\n";
-      s += "Humidity: " + String(humidity, 1)                             + "%\n";
-      s += "Volume: "   + String(currentVolumePercent) + "%" + (isMuted ? " (muted)" : "") + "\n";
-      s += "WiFi: "     + String(WiFi.RSSI())                             + " dBm\n";
-      s += "Lock: "     + String(isLocked ? "LOCKED" : "ACTIVE");
-      bot.sendMessage(chat_id, s, "");
+      char buf[200];
+      snprintf(buf, sizeof(buf),
+        "Lid: %s\nFill: %d%%\nTemp: %.1f C\nHumidity: %.1f%%\n"
+        "Volume: %d%%%s\nWiFi: %d dBm\nLock: %s",
+        lidState.c_str(), fillPercent, temperature, humidity,
+        currentVolumePercent, isMuted ? " (muted)" : "",
+        WiFi.RSSI(), isLocked ? "LOCKED" : "ACTIVE");
+      bot.sendMessage(chat_id, buf, "");
 
     } else if (text == "Details") {
       String kb = "[[{\"text\":\"About Creator\",\"url\":\"https://www.linkedin.com/in/marin-vacarciuc\"}],"
@@ -185,13 +184,17 @@ void handleNewMessages(int n) {
       bot.sendMessage(chat_id, "Bin unlocked.", "");
 
     } else if (text == "/reset") {
-      ardSerial.print("rr");   // double byte — matches Arduino's double-r guard
-      bot.sendMessage(chat_id, "Reset command sent.", "");
+      if (chat_id == String(CHAT_ID)) {
+        ardSerial.print("rr");
+        bot.sendMessage(chat_id, "Reset command sent.", "");
+      } else {
+        bot.sendMessage(chat_id, "This command is owner-only.", "");
+      }
 
     } else if (text == "/laws") {
       String msg =
         "The Three Laws of FrankenBin\n"
-        "(Asimov, 1942 — adapted for rubbish, 2026)\n"
+        "(Asimov, 1942 — adapted for FrankenBin, 2026)\n"
         "\n"
         "LAW I\n"
         "A bin shall not harm a human being.\n"

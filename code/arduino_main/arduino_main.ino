@@ -333,7 +333,7 @@ void loop() {
 
   // ---- FSM -----------------------------------------------------------------
   //
-  // The Three Laws of FrankenBin  (Asimov, 1942 — adapted for rubbish, 2026)
+  // The Three Laws of FrankenBin  (Asimov, 1942 — adapted for FrankenBin, 2026)
   //
   // LAW I   "A bin shall not harm a human being."
   //          → CLOSING polls TRIG_2/ECHO_2 every 50 ms; reverses if < ANTIPINCH_CM.
