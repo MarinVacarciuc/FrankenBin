@@ -212,20 +212,20 @@ void processCommand(char cmd) {
 }
 
 // =============================================================================
-// Watchdog: interrupt + reset mode
-// wdt_enable() alone only sets WDE (reset only). We need WDIE set too so the
-// ISR fires before reset, giving us time to write the crash flag to EEPROM.
+// Watchdog: interrupt + reset mode (WDIE + WDE via timed WDTCSR sequence).
+// ISR fires on first timeout → writes crash flag to EEPROM → CPU resets.
 // =============================================================================
 ISR(WDT_vect) {
   EEPROM.write(CRASH_FLAG_ADDR, CRASH_MAGIC);
-  // WDE remains set → CPU resets immediately after ISR returns.
 }
 
 void enableWatchdog() {
+  wdt_reset();
   cli();
-  MCUSR = 0;
+  MCUSR &= ~(1 << WDRF);              // clear watchdog reset flag
+  // Timed sequence: unlock → configure (must complete within 4 CPU cycles)
   WDTCSR |= (1 << WDCE) | (1 << WDE);
-  WDTCSR  = (1 << WDIE) | (1 << WDE) | (1 << WDP3);   // interrupt+reset, 4 s
+  WDTCSR  = (1 << WDIE) | (1 << WDE) | (1 << WDP3);  // interrupt+reset, 4 s
   sei();
 }
 
