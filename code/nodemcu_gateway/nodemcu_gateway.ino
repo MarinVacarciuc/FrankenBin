@@ -15,7 +15,9 @@
 #include "secrets.h"
 
 // --- M2M serial (Arduino HW Serial 0/1, cross-wired) ------------------------
-SoftwareSerial ardSerial(D6, D7);   // D6=RX ← Arduino TX(1), D7=TX → Arduino RX(0)
+// GPIO12 = NodeMCU D6 = RX ← Arduino TX (pin 1)
+// GPIO13 = NodeMCU D7 = TX → Arduino RX (pin 0)
+SoftwareSerial ardSerial(12, 13);
 
 // --- Telegram ----------------------------------------------------------------
 WiFiClientSecure  secured_client;
