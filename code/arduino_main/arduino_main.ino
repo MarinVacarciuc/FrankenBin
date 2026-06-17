@@ -135,6 +135,9 @@ void processCommand(char cmd) {
     isFireCooldown = true; fireCooldownStart = millis();
     Serial.println(F("SYS:COOLDOWN"));
   }
+  if (cmd == 'F') {            // hidden self-test: drive the real fire-alarm path
+    triggerFireAlarm();
+  }
   if (cmd == 'r') {
     myMP3.stop();
     void (*resetFunc)(void) = 0;
@@ -258,6 +261,17 @@ void loop() {
   }
 }
 
+void triggerFireAlarm() {
+  Serial.println(F("ALARM:FIRE"));
+  bool needsClosing = (currentState == OPEN || currentState == OPENING || currentState == CLOSING);
+  myMP3.volume(30); myMP3.playMp3Folder(9); currentState = FIRE_ALARM;
+  delay(2000);
+  if (needsClosing) {
+    digitalWrite(AIN1, LOW); digitalWrite(AIN2, HIGH); analogWrite(PWMA, 255);
+    delay(1900); actuatorStop();
+  }
+}
+
 void performSecurityCheck() {
   float t = dht.readTemperature();
   float h = dht.readHumidity();
@@ -275,14 +289,7 @@ void performSecurityCheck() {
   }
 
   if (t >= 35.0) {
-    Serial.println(F("ALARM:FIRE"));
-    bool needsClosing = (currentState == OPEN || currentState == OPENING || currentState == CLOSING);
-    myMP3.volume(30); myMP3.playMp3Folder(9); currentState = FIRE_ALARM;
-    delay(2000);
-    if (needsClosing) {
-      digitalWrite(AIN1, LOW); digitalWrite(AIN2, HIGH); analogWrite(PWMA, 255);
-      delay(1900); actuatorStop();
-    }
+    triggerFireAlarm();
   }
 
   if (currentState == IDLE || currentState == FULL_LOCKED) {

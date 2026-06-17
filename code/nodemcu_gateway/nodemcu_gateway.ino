@@ -69,6 +69,26 @@ void broadcastAction(String message) {
   }
 }
 
+// Proactive alerts: send to every active session user, plus the configured
+// owner (CHAT_ID) so the alert always lands even if nobody has messaged since boot.
+void notifyAll(String message) {
+  bool ownerSeen = false;
+  for (int i = 0; i < userCount; i++) {
+    bot.sendMessage(sessionUsers[i], message, "");
+    if (sessionUsers[i] == CHAT_ID) ownerSeen = true;
+  }
+  if (!ownerSeen) bot.sendMessage(CHAT_ID, message, "");
+}
+
+void notifyAllKb(String message) {
+  bool ownerSeen = false;
+  for (int i = 0; i < userCount; i++) {
+    bot.sendMessageWithReplyKeyboard(sessionUsers[i], message, "", getKeyboard(), true);
+    if (sessionUsers[i] == CHAT_ID) ownerSeen = true;
+  }
+  if (!ownerSeen) bot.sendMessageWithReplyKeyboard(CHAT_ID, message, "", getKeyboard(), true);
+}
+
 void setup() {
   Serial.begin(9600);
   ardSerial.begin(9600);
@@ -109,7 +129,7 @@ void loop() {
 
     if (isArduinoOffline) {
       isArduinoOffline = false;
-      bot.sendMessageWithReplyKeyboard(CHAT_ID, "Hardware connection restored! Arduino is back online.", "", getKeyboard(), true);
+      notifyAllKb("Hardware connection restored! Arduino is back online.");
       Serial.println("Arduino is back online.");
     }
 
@@ -144,22 +164,22 @@ void loop() {
       if (src == 'T') reason = "Telegram Bot";
       else if (src == 'H') reason = "Sensor (Hand movement)";
       else if (src == 'P') reason = "Foot pedal";
-      bot.sendMessage(CHAT_ID, "Bin opened. Source: " + reason, "");
+      notifyAll("Bin opened. Source: " + reason);
     }
     else if (msg == "LID:CLOSED") {
       isOpen = false;
     }
     else if (msg == "ALARM:FIRE" && !isFire) {
       isFire = true;
-      bot.sendMessage(CHAT_ID, "CRITICAL ALARM! FIRE!\nImmediate action required!", "");
+      notifyAll("CRITICAL ALARM! FIRE!\nImmediate action required!");
     }
     else if (msg == "SYS:COOLDOWN") {
       isFire = false;
-      bot.sendMessage(CHAT_ID, "Fire extinguished. System returned to normal.", "");
+      notifyAll("Fire extinguished. System returned to normal.");
     }
     else if (msg == "ALARM:FULL" && !isFull) {
       isFull = true;
-      bot.sendMessage(CHAT_ID, "Bin is full. Maintenance required.", "");
+      notifyAll("Bin is full. Maintenance required.");
     }
     else if (msg == "SYS:BOOT") {
       // Arduino restarted: its lid is closed and state is fresh. Clear stale
@@ -172,7 +192,7 @@ void loop() {
 
   if (!isArduinoOffline && millis() - lastArduinoPing > 20000) {
     isArduinoOffline = true;
-    bot.sendMessageWithReplyKeyboard(CHAT_ID, "WARNING: Hardware Offline! Arduino is not responding.", "", getKeyboard(), true);
+    notifyAllKb("WARNING: Hardware Offline! Arduino is not responding.");
     Serial.println("WARNING: Arduino heartbeat lost!");
   }
 
@@ -341,6 +361,15 @@ void handleNewMessages(int numNewMessages) {
         "\n"
         "All three laws are active. This bin is compliant.";
       bot.sendMessage(chat_id, lawsMsg, "");
+    }
+    else if (text == "/firetest") {
+      if (!isArduinoOffline) {
+        ardSerial.print('F');
+        bot.sendMessage(chat_id, "Fire-alarm self-test triggered. The lid will shut and the siren will sound. Press Open (or the pedal) to clear.", "");
+        broadcastAction(senderName + " ran the fire-alarm self-test.");
+      } else {
+        bot.sendMessage(chat_id, "Cannot run fire test: hardware is offline.", "");
+      }
     }
   }
 }
