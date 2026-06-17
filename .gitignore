@@ -5,6 +5,10 @@
 docs/
 archive/
 
+# Personal firmware-version backups — local only, not for GitHub
+arduino_versions/
+nodemcu_versions/
+
 # Added progressively as project evolved — removed when each was ready to publish
 assets/screenshots/
 assets/qr.png
