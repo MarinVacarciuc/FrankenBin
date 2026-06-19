@@ -108,6 +108,14 @@ void setup() {
     now = time(nullptr);
   }
 
+  // Drop any commands queued in Telegram while the bot was offline, so a
+  // restart never replays old commands from the previous session. We advance
+  // the update offset past the whole backlog WITHOUT calling handleNewMessages.
+  int pendingUpdates = bot.getUpdates(bot.last_message_received + 1);
+  while (pendingUpdates) {
+    pendingUpdates = bot.getUpdates(bot.last_message_received + 1);
+  }
+
   ArduinoOTA.setHostname("FrankenBin_Gateway");
   ArduinoOTA.setPassword(OTA_PASSWORD);
   ArduinoOTA.begin();
