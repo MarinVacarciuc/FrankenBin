@@ -28,8 +28,8 @@ DHT dht(DHT_PIN, DHTTYPE);
 const int OPEN_DIST = 20;
 const int HOLD_DIST = 30;
 const int FULL_DIST = 6;
-const int EMPTY_BIN_DIST = 40;
-const int PINCH_DIST = 4;
+const int EMPTY_BIN_DIST = 22;
+const int PINCH_DIST = 3;
 const int CLOSE_DELAY = 1000;
 
 unsigned long zoneClearTime = 0; bool timerStarted = false;
