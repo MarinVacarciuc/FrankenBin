@@ -84,7 +84,7 @@ Channel **3405117** — Fill %, Temperature, Humidity, RSSI — posted every 16 
 ```
 
 - **Details** → inline buttons: About Creator · ThingSpeak Charts · Source Code
-- Hidden command: `/laws` — the Three Laws of FrankenBin; '/firetest' - Firetest imitation.
+- Hidden command: `/laws` — the Three Laws of FrankenBin; `/firetest` - Firetest imitation.
 
 ## Wiring
 | Signal | Arduino Pin |
