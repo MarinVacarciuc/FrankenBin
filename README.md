@@ -21,6 +21,21 @@ Arduino RX (pin 0) ← NodeMCU D6 (GPIO12, SoftSerial TX)
 
 > **Upload note:** disconnect pins 0/1 before flashing the Arduino via USB.
 
+## Build Journey
+
+From a bare NodeMCU board to a working bin, over about two months.
+
+| | |
+|---|---|
+| ![First components](build-journey/01_2026-04-28_first-components.jpg) **28 Apr** - The starting point: a bare NodeMCU ESP8266, no wiring yet. | ![Actuator teardown](build-journey/02_2026-04-30_actuator-teardown.jpg) **30 Apr** - Taking the linear actuator apart to understand it before wiring it up. |
+| ![Actuators wired](build-journey/03_2026-05-04_actuators-wired.jpg) **4 May** - Two actuators, wires attached, being tested side by side. | ![Bare protoshield](build-journey/04_2026-05-08_protoshield-bare.jpg) **8 May** - A protoshield before any soldering: empty perfboard, one resistor placed. |
+| ![Display breadboard test](build-journey/05_2026-05-11_display-breadboard-test.jpg) **11 May** - A TFT display wired on breadboard jumpers, no soldering yet, just proving the wiring out. | ![Soldering station](build-journey/06_2026-05-20_soldering-station.jpg) **20 May** - This is where I actually start soldering wires onto the board: iron heated, helping-hands holding the perfboard, first joints going in. |
+| ![Flashing firmware](build-journey/07_2026-05-21_flashing-firmware.jpg) **21 May** - Flashing firmware from the laptop while the freshly-wired board sits on the bench. | ![Protoboard wired, back](build-journey/08_2026-05-22_protoboard-wired-back.jpg) **22 May** - The back of the board a day later: wires now properly soldered onto the pads, not just resting in holes. |
+| ![Protoshield labelled](build-journey/09_2026-05-23_protoshield-labelled.jpg) **23 May** - Every soldered connector hand-labelled with polarity, so I don't cross a + and - later. | ![Electronics in case](build-journey/10_2026-05-31_electronics-in-case.jpg) **31 May** - First time the soldered electronics actually sit inside the bin enclosure, powered from a battery pack. |
+| ![ESP + WiFi module](build-journey/11_2026-06-10_esp-wifi-module.jpg) **10 Jun** - The ESP8266 gateway hardware coming together on the bench. | ![Telegram live status](build-journey/12_2026-06-11_telegram-live-status.jpg) **11 Jun** - Real output from the finished electronics: live fill-level and fire-alarm messages from the Telegram bot. |
+| ![Final shield populated](build-journey/13_2026-06-12_final-shield-populated.jpg) **12 Jun** - The finished shield: every component and wire soldered in place, nothing left on breadboard. | ![Finished bin, front](build-journey/14_2026-06-23_finished-bin-front.jpg) **23 Jun** - The finished bin. |
+| ![Finished bin, back](build-journey/15_2026-06-23_finished-bin-back.jpg) **23 Jun** - Finished bin, back view: cable gland and QR code for the "About Creator" link. | |
+
 ## Hardware
 | Component | Purpose |
 |---|---|
