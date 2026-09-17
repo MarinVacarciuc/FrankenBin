@@ -1,0 +1,127 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - link [ref=e6] [cursor=pointer]:
+        - /url: https://www.lidl.co.uk/
+        - img "Lidl" [ref=e7]
+      - button "Menu" [ref=e10] [cursor=pointer]:
+        - img "burger" [ref=e11]
+      - link [ref=e15] [cursor=pointer]:
+        - /url: https://customer.care.lidl.co.uk/SelfServiceUK/s/
+        - heading "Home" [level=1] [ref=e16]
+      - link [ref=e18] [cursor=pointer]:
+        - /url: https://www.lidl.co.uk
+        - heading "Lidl.co.uk" [level=1] [ref=e19]
+    - generic [ref=e32]:
+      - combobox "Search field with suggestions. Suggestions may be available under this field. To send, press Enter." [ref=e33]
+      - button "Search..." [ref=e34] [cursor=pointer]
+  - main [ref=e39]:
+    - region [ref=e40]:
+      - generic [ref=e42]:
+        - navigation "Breadcrumb" [ref=e47]:
+          - list [ref=e48]:
+            - listitem "Go to Lidl" [ref=e49]:
+              - generic [ref=e50] [cursor=pointer]: ...
+            - listitem "Go back to Service & Help" [ref=e51]:
+              - generic [aria-hidden] [ref=e52]: /
+              - heading "Service & Help" [level=2] [ref=e54] [cursor=pointer]
+        - generic [ref=e61]:
+          - heading "Contact Form Lidl Great Britain" [level=2] [ref=e63]
+          - region [ref=e64]:
+            - heading [level=3] [ref=e65]:
+              - button "1. Your Request" [expanded] [ref=e66] [cursor=pointer]
+            - region "1. Your Request" [ref=e75]:
+              - generic [ref=e77]:
+                - group "Category*" [ref=e78]:
+                  - generic [ref=e80]:
+                    - generic [ref=e82]:
+                      - radio "Product"
+                      - generic [ref=e83] [cursor=pointer]: Product
+                    - generic [ref=e86]:
+                      - radio "Lidl Plus"
+                      - generic [ref=e87] [cursor=pointer]: Lidl Plus
+                    - generic [ref=e90]:
+                      - radio "Store & General"
+                      - generic [ref=e91] [cursor=pointer]: Store & General
+                - generic [ref=e96]:
+                  - combobox "Subject*" [ref=e97] [cursor=pointer]
+                  - generic: Subject*
+          - heading [level=3] [ref=e102]:
+            - button "2. Your Message" [disabled] [ref=e103]
+          - heading [level=3] [ref=e113]:
+            - button "3. Your Details" [disabled] [ref=e114]
+          - generic [ref=e123]:
+            - heading "*mandatory field" [level=5] [ref=e124]
+            - generic [ref=e127]:
+              - text: When processing your request, we process your personal data provided. The legal information on how we process your personal data can be found under the 'Contacting Customer Care' part of our privacy notice found
+              - link "here" [ref=e128] [cursor=pointer]:
+                - /url: https://www.lidl.co.uk/c/customer-privacy-notice/s10022952
+              - text: .By submitting your contact form you agree that your data will be passed onto our service providers who will look into any product-specific enquiries/investigate warranty claims or to our internal departments (i.e. Quality Assurance) to investigate any product concerns. We do this to ensure we meet our contractual obligations to assist with your product specific requests i.e. repairs or replacements. For more information about how we process data please see our
+              - link "privacy policy" [ref=e129] [cursor=pointer]:
+                - /url: https://www.lidl.co.uk/about-us/legal-compliance-data-protection/data-protection/customer-privacy-notice
+              - text: .
+            - button "SEND" [disabled] [ref=e131]
+        - button "Talk to the chatbot" [ref=e133] [cursor=pointer]
+  - contentinfo [ref=e140]:
+    - navigation [ref=e141]:
+      - list [ref=e144]:
+        - listitem "Open link Middle of Lidl page" [ref=e145]:
+          - link "Open in a new tab" [ref=e146] [cursor=pointer]:
+            - /url: https://www.lidl.co.uk/middle-of-lidl
+            - text: Middle of Lidl
+        - listitem "Open link Food Offers page" [ref=e147]:
+          - link "Open in a new tab" [ref=e148] [cursor=pointer]:
+            - /url: https://www.lidl.co.uk/food-offers
+            - text: Food Offers
+        - listitem "Open link Our Products page" [ref=e149]:
+          - link "Open in a new tab" [ref=e150] [cursor=pointer]:
+            - /url: https://www.lidl.co.uk/our-products
+            - text: Our Products
+        - listitem "Open link Our Wine Range page" [ref=e151]:
+          - link "Open in a new tab" [ref=e152] [cursor=pointer]:
+            - /url: https://www.lidl.co.uk/our-wine-range
+            - text: Our Wine Range
+        - listitem "Open link Recipes page" [ref=e153]:
+          - link "Open in a new tab" [ref=e154] [cursor=pointer]:
+            - /url: https://recipes.lidl.co.uk
+            - text: Recipes
+        - listitem "Open link Lidl Plus page" [ref=e155]:
+          - link "Open in a new tab" [ref=e156] [cursor=pointer]:
+            - /url: https://www.lidl.co.uk/lidl-plus
+            - text: Lidl Plus
+    - navigation [ref=e157]:
+      - list [ref=e160]:
+        - listitem "Open link Legal Info page" [ref=e161]:
+          - link "Open in a new tab" [ref=e162] [cursor=pointer]:
+            - /url: https://www.lidl.co.uk/about-us/legal-compliance-data-protection/legal
+            - text: Legal Info
+        - listitem "Open link Compliance page" [ref=e163]:
+          - link "Open in a new tab" [ref=e164] [cursor=pointer]:
+            - /url: https://www.lidl.co.uk/about-us/legal-compliance-data-protection/compliance
+            - text: Compliance
+        - listitem "Open link Whistleblowing page" [ref=e165]:
+          - link "Open in a new tab" [ref=e166] [cursor=pointer]:
+            - /url: https://www.lidl.co.uk/about-us/legal-compliance-data-protection/compliance/whistleblowing
+            - text: Whistleblowing
+        - listitem "Open link Data Protection page" [ref=e167]:
+          - link "Open in a new tab" [ref=e168] [cursor=pointer]:
+            - /url: https://www.lidl.co.uk/about-us/legal-compliance-data-protection/data-protection/customer-privacy-notice
+            - text: Data Protection
+        - listitem "Open link Modern Slavery Statement page" [ref=e169]:
+          - link "Open in a new tab" [ref=e170] [cursor=pointer]:
+            - /url: https://corporate.lidl.co.uk/sustainability/human-rights/modern-slavery
+            - text: Modern Slavery Statement
+        - listitem "Open link Property page" [ref=e171]:
+          - link "Open in a new tab" [ref=e172] [cursor=pointer]:
+            - /url: https://www.lidl.co.uk/about-us/property
+            - text: Property
+        - listitem "Open link Product Recall page" [ref=e173]:
+          - link "Open in a new tab" [ref=e174] [cursor=pointer]:
+            - /url: https://www.lidl.co.uk/c/product-recalls/s10043891
+            - text: Product Recall
+        - listitem "Open link Cookie Notice page" [ref=e175]:
+          - link "Cookie Notice" [ref=e176] [cursor=pointer]:
+            - /url: https://www.lidl.co.uk/about-us/legal-compliance-data-protection/data-protection/customer-cookie-notice
+  - generic:
+    - status
+  - generic [ref=e178]: Contact Support

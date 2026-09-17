@@ -1,0 +1,227 @@
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - link [ref=e275] [cursor=pointer]:
+        - /url: https://www.lidl.co.uk/
+      - button [ref=e277] [cursor=pointer]:
+        - generic [ref=e13]: Menu
+      - link [ref=e279] [cursor=pointer]:
+        - /url: https://customer.care.lidl.co.uk/SelfServiceUK/s/
+        - heading [level=1] [ref=e280]: Home
+      - link [ref=e281] [cursor=pointer]:
+        - /url: https://www.lidl.co.uk
+        - heading [level=1] [ref=e282]: Lidl.co.uk
+    - generic [ref=e32]:
+      - combobox [ref=e283]
+      - button [ref=e284] [cursor=pointer]:
+        - generic [ref=e38]: Search...
+  - main [aria-hidden] [ref=e39]:
+    - region [ref=e285]:
+      - generic [ref=e42]:
+        - navigation [ref=e286]:
+          - list [ref=e48]:
+            - listitem [ref=e287]:
+              - generic [ref=e50] [cursor=pointer]: ...
+            - listitem [ref=e288]:
+              - generic [aria-hidden] [ref=e52]: /
+              - heading [level=2] [ref=e289] [cursor=pointer]: Service & Help
+        - generic [ref=e61]:
+          - heading [level=2] [ref=e290]: Contact Form Lidl Great Britain
+          - region [ref=e64]:
+            - heading [level=3] [ref=e291]:
+              - button [ref=e292] [cursor=pointer]:
+                - generic [ref=e68]:
+                  - generic [ref=e69]: 1. Your Request
+                  - generic [ref=e206]:
+                    - generic [ref=e207]:
+                      - generic [ref=e208]: "Category:"
+                      - generic [ref=e209]: Lidl Plus
+                    - generic [ref=e210]:
+                      - generic [ref=e211]: "Subject:"
+                      - generic [ref=e212]: Coupons
+          - generic [ref=e101]:
+            - heading [level=3] [ref=e293]:
+              - button [expanded] [ref=e294] [cursor=pointer]:
+                - generic [ref=e104]: 2. Your Message
+            - region [ref=e295]:
+              - generic [ref=e215]:
+                - region [ref=e296]:
+                  - heading [level=4] [ref=e297]: Information Messages
+                  - list [ref=e219]:
+                    - listitem [ref=e220]:
+                      - generic [ref=e221]: Enter your Lidl Plus contact information in the Your Details section, for quick verification!
+                - generic [ref=e226]:
+                  - textbox [ref=e298]: "Dear Lidl Customer Care, I am writing about two recent shops at your Manchester Road store in Burnley (BB11 2EG), made with two separate Lidl Plus accounts (mine and my wife's, Natalia), where coupons that had been activated in the app before paying were not applied at the till. 1. Shop on 4 October 2026, 14:06 (transaction 018094/04, total £87.29), on my account - Coupon: \"£5 off when you spend £60\". It was activated before checkout. - The spend was above £60 and contained no alcohol, gift cards or charity donations. - The coupon appears as \"Not redeemed\" in the app's Purchase summary. 2. Shop on 22 October 2026, 17:18 (transaction 194187/01, total £129.49), on my wife's account - Coupon: \"£8 off when you spend £80\", valid 19 to 25 October. It was activated before checkout. - The spend was above £80 and contained no alcohol. - The coupon appears as \"Not redeemed\" and the Lidl Plus savings show £0.00. - The \"15% off Dairy Manor British Unsalted Butter, 250g\" coupon was also activated. It appears to match the butter on the receipt (2 x £1.85), but no discount was applied. In both cases the Lidl Plus card was scanned and points were credited (+168 and +330). On the 4 October receipt, other Lidl Plus offers did apply (Pepsi Max multibuy, Sol&Mar seeds, Funsize cucumbers). So the card was recognised, but the spend-threshold coupons were not applied. Since this has now happened twice, on two different accounts, there may be a fault with these coupons at the checkout. The conditions of both coupons were met, so I would like the missing discounts of £5.00 and £8.00 (£13.00 in total), plus the butter discount if it applies, credited back to me. Please tell me how you will do this, for example as a refund to my card or as Lidl Plus credit. I have attached one PDF per shop with the receipt, the coupon screenshots and the Purchase summary pages. (Card payment details have been removed from the receipt.) Kind regards, Marin Vacarciuc"
+                  - generic: Your Message*
+                - generic [ref=e229]:
+                  - heading [level=4] [ref=e299]: File
+                  - generic [ref=e232]:
+                    - generic [ref=e234]:
+                      - generic [ref=e241]:
+                        - button [ref=e300]
+                        - generic [ref=e243]: Upload Files
+                      - generic [ref=e247]: PNG, JPG, JPEG, PDF – max. 5 MB per file
+                    - paragraph [ref=e248]: Payment card or bank account information such as PAN, service code, PIN, expiration date, IBAN, etc. should not be sent. This also includes images/scans of originals. In the event of such a sending, the entire contact will be deleted and not processed further. If we need further information, we will request it separately.
+                - generic [ref=e252]:
+                  - combobox [ref=e301] [cursor=pointer]
+                  - generic: Coupon issue *
+                - generic [ref=e259]:
+                  - combobox [ref=e302] [cursor=pointer]
+                  - generic: Coupon Type *
+                - generic [ref=e264]:
+                  - generic [ref=e266]:
+                    - textbox [ref=e303]: 2026-10-22
+                    - generic: Date of purchase
+                  - generic [ref=e268]: Please provide the date of your store visit.
+          - generic [ref=e112]:
+            - heading [level=3] [ref=e304]:
+              - button [expanded] [ref=e305] [cursor=pointer]:
+                - generic [ref=e115]: 3. Your Details
+            - region [ref=e306]:
+              - generic [ref=e308]:
+                - generic [ref=e311]:
+                  - textbox [ref=e312]
+                  - generic: Email *
+                - generic [ref=e314]:
+                  - generic [ref=e316]:
+                    - textbox [ref=e317]:
+                      - /placeholder: " "
+                    - generic: Loyalty ID *
+                  - generic [ref=e318]: Open your Lidl Plus app and tap the floating icon to view the Lidl Plus card. You can find this code under your name (e.g. 77320001122334455).
+                - group [ref=e320]:
+                  - generic [ref=e321]: Salutation
+                  - generic [ref=e322]:
+                    - generic [ref=e324]:
+                      - radio
+                      - generic [ref=e325] [cursor=pointer]: Mr
+                    - generic [ref=e328]:
+                      - radio
+                      - generic [ref=e329] [cursor=pointer]: Ms
+                    - generic [ref=e332]:
+                      - radio
+                      - generic [ref=e333] [cursor=pointer]: Miss
+                    - generic [ref=e336]:
+                      - radio
+                      - generic [ref=e337] [cursor=pointer]: Mrs
+                    - generic [ref=e340]:
+                      - radio
+                      - generic [ref=e341] [cursor=pointer]: Dr.
+                    - generic [ref=e344]:
+                      - radio
+                      - generic [ref=e345] [cursor=pointer]: Other
+                    - generic [ref=e348]:
+                      - radio
+                      - generic [ref=e349] [cursor=pointer]: I do not wish to specify
+                - generic [ref=e353]:
+                  - textbox [ref=e354]:
+                    - /placeholder: " "
+                  - generic: First Name *
+                - generic [ref=e357]:
+                  - textbox [ref=e358]:
+                    - /placeholder: " "
+                  - generic: Last Name *
+                - generic [ref=e359]:
+                  - generic [ref=e361]:
+                    - textbox [ref=e362]:
+                      - /placeholder: " "
+                    - generic: Phone *
+                  - generic [ref=e363]: "Please insert a correct format. Example: +44XXXXXXX"
+                - iframe [ref=e371]:
+                  - generic [ref=f13e5]:
+                    - textbox "Find Your Local Store *" [ref=f13e6]:
+                      - /placeholder: " "
+                    - generic: Find Your Local Store *
+          - generic [ref=e123]:
+            - heading [level=5] [ref=e372]: "*mandatory field"
+            - generic [ref=e127]:
+              - text: When processing your request, we process your personal data provided. The legal information on how we process your personal data can be found under the 'Contacting Customer Care' part of our privacy notice found
+              - link [ref=e373] [cursor=pointer]:
+                - /url: https://www.lidl.co.uk/c/customer-privacy-notice/s10022952
+                - text: here
+              - text: . By submitting your contact form you agree that your data will be passed onto our service providers who will look into any product-specific enquiries/investigate warranty claims or to our internal departments (i.e. Quality Assurance) to investigate any product concerns. We do this to ensure we meet our contractual obligations to assist with your product specific requests i.e. repairs or replacements. For more information about how we process data please see our
+              - link [ref=e374] [cursor=pointer]:
+                - /url: https://www.lidl.co.uk/about-us/legal-compliance-data-protection/data-protection/customer-privacy-notice
+                - text: privacy policy
+              - text: .
+            - button [disabled] [ref=e375]: SEND
+        - button [ref=e376] [cursor=pointer]
+  - contentinfo [ref=e140]:
+    - navigation [ref=e141]:
+      - list [ref=e144]:
+        - listitem [ref=e377]:
+          - link [ref=e378] [cursor=pointer]:
+            - /url: https://www.lidl.co.uk/middle-of-lidl
+            - text: Middle of Lidl
+        - listitem [ref=e379]:
+          - link [ref=e380] [cursor=pointer]:
+            - /url: https://www.lidl.co.uk/food-offers
+            - text: Food Offers
+        - listitem [ref=e381]:
+          - link [ref=e382] [cursor=pointer]:
+            - /url: https://www.lidl.co.uk/our-products
+            - text: Our Products
+        - listitem [ref=e383]:
+          - link [ref=e384] [cursor=pointer]:
+            - /url: https://www.lidl.co.uk/our-wine-range
+            - text: Our Wine Range
+        - listitem [ref=e385]:
+          - link [ref=e386] [cursor=pointer]:
+            - /url: https://recipes.lidl.co.uk
+            - text: Recipes
+        - listitem [ref=e387]:
+          - link [ref=e388] [cursor=pointer]:
+            - /url: https://www.lidl.co.uk/lidl-plus
+            - text: Lidl Plus
+    - navigation [ref=e157]:
+      - list [ref=e160]:
+        - listitem [ref=e389]:
+          - link [ref=e390] [cursor=pointer]:
+            - /url: https://www.lidl.co.uk/about-us/legal-compliance-data-protection/legal
+            - text: Legal Info
+        - listitem [ref=e391]:
+          - link [ref=e392] [cursor=pointer]:
+            - /url: https://www.lidl.co.uk/about-us/legal-compliance-data-protection/compliance
+            - text: Compliance
+        - listitem [ref=e393]:
+          - link [ref=e394] [cursor=pointer]:
+            - /url: https://www.lidl.co.uk/about-us/legal-compliance-data-protection/compliance/whistleblowing
+            - text: Whistleblowing
+        - listitem [ref=e395]:
+          - link [ref=e396] [cursor=pointer]:
+            - /url: https://www.lidl.co.uk/about-us/legal-compliance-data-protection/data-protection/customer-privacy-notice
+            - text: Data Protection
+        - listitem [ref=e397]:
+          - link [ref=e398] [cursor=pointer]:
+            - /url: https://corporate.lidl.co.uk/sustainability/human-rights/modern-slavery
+            - text: Modern Slavery Statement
+        - listitem [ref=e399]:
+          - link [ref=e400] [cursor=pointer]:
+            - /url: https://www.lidl.co.uk/about-us/property
+            - text: Property
+        - listitem [ref=e401]:
+          - link [ref=e402] [cursor=pointer]:
+            - /url: https://www.lidl.co.uk/c/product-recalls/s10043891
+            - text: Product Recall
+        - listitem [ref=e403]:
+          - link [ref=e404] [cursor=pointer]:
+            - /url: https://www.lidl.co.uk/about-us/legal-compliance-data-protection/data-protection/customer-cookie-notice
+            - text: Cookie Notice
+  - dialog [ref=e406]:
+    - generic [ref=e407]:
+      - generic [ref=e408]:
+        - heading "Upload Files" [active] [level=1] [ref=e409]
+        - button "Cancel and close" [ref=e410] [cursor=pointer]
+      - generic [ref=e418]:
+        - generic [ref=e421]:
+          - generic [ref=e423]:
+            - generic [ref=e425]: Adobe PDF
+            - generic [ref=e432]:
+              - generic [ref=e433]: Lidl_22-10-2026_wife_account_194187-01.pdf
+              - generic [ref=e434]: 631 KB
+          - progressbar "Lidl_22-10-2026_wife_account_194187-01.pdf upload progress is 63%" [ref=e438]
+          - button "Cancel Lidl_22-10-2026_wife_account_194187-01.pdf upload" [ref=e442] [cursor=pointer]
+        - status [ref=e450]
+      - generic [ref=e452]:
+        - generic [ref=e453]: 0 of 1 file uploaded
+        - button "Done" [disabled] [ref=e455]
+  - generic [aria-hidden] [ref=e178]: Contact Support
