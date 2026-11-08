@@ -117,3 +117,6 @@ Channel **3405117** — Fill %, Temperature, Humidity, RSSI — posted every 16 
 
 ## OTA Updates
 The NodeMCU gateway supports ArduinoOTA. After the first USB flash, select **FrankenBin_Gateway** as the network port in the Arduino IDE and upload using the OTA password.
+
+## Authorship
+I designed FrankenBin, built and wired the hardware, directed every change, and tested and debugged it on the real bin. The firmware and gateway code were written by AI coding assistants working to my design. I started with no electronics or firmware background and had a working build in about two months.
